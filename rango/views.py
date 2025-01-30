@@ -63,11 +63,14 @@ def add_page(request, category_name_slug):
     form = PageForm()
 
     if request.method == "POST":
+        print("POST data:", request.POST)
+        print("FILES data:", request.FILES)  # Should be empty if no files are involved
+
         form = PageForm(request.POST)
 
         if form.is_valid():
             if category:
-                page = form.save(commit = True)
+                page = form.save(commit = False)
                 page.category = category
                 page.views = 0
                 page.save()
