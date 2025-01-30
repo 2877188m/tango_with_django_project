@@ -1,6 +1,7 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from rango.models import Category, Page
+from rango.forms import CategoryForm
 
 def index(request):
     #Get a list of all categories currently stored, first 5, ordered by likes in descending order
@@ -30,3 +31,21 @@ def show_category(request, category_name_slug):
     
     #Render and return to client
     return render(request, "rango/category.html", context = context_dict)
+
+def add_category(request):
+    form = CategoryForm()
+
+    if request.method == "POST":
+        form = CategoryForm(request.POST)
+
+        if form.is_valid():
+            form.save(commit = True)
+
+            #Redirect user back to the index view
+            return redirect("/rango/")
+        else:
+            #Invalid
+            print(form.errors)
+    # Will handle the bad form, new form, or no form supplied cases.
+    return render(request, "rango/add_category.html", {"form": form})
+        
