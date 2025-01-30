@@ -43,7 +43,7 @@ def add_category(request):
             form.save(commit = True)
 
             #Redirect user back to the index view
-            return redirect("/rango/")
+            return redirect(reverse("rango:index"))
         else:
             #Invalid
             print(form.errors)
@@ -58,14 +58,11 @@ def add_page(request, category_name_slug):
     
     #Redirect is category not existent
     if category is None:
-        return redirect("/rango/")
+        return redirect(reverse("rango:index"))
     
     form = PageForm()
 
     if request.method == "POST":
-        print("POST data:", request.POST)
-        print("FILES data:", request.FILES)  # Should be empty if no files are involved
-
         form = PageForm(request.POST)
 
         if form.is_valid():
