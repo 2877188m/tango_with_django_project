@@ -1,8 +1,8 @@
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.http import HttpResponse
-from rango.models import Category, Page
-from rango.forms import CategoryForm, PageForm
+from rango.models import Category, Page, UserProfile
+from rango.forms import CategoryForm, PageForm, UserForm, UserProfileForm
 
 def index(request):
     #Get a list of all categories currently stored, first 5, ordered by likes in descending order
@@ -78,3 +78,42 @@ def add_page(request, category_name_slug):
     #Handling for edge cases
     context_dict = {'form': form, 'category': category}
     return render(request, 'rango/add_page.html', context = context_dict)
+
+def register(request):
+    #View for a user to register
+    registered = False #flag
+
+    if request.method == "POST":
+        #Grab info from the raw form
+        user_form = UserForm(request.POST)
+        profile_form = UserProfileForm(request.POST)
+
+        if user_form.is_valid() and profile_form.is_valid():
+            user = user_form.save()
+
+            #Hash the password, then update the object
+            user.set_password(user.password)
+            user.save()
+
+            #Dont commit profile yet
+            profile = profile_form.save(commit = False)
+            profile.user = user #set user
+
+            #Search for input image
+            if "picture" in request.FILES:
+                profile.picture = request.FILES["picture"]
+            
+            #Save, and complete registration
+            profile.save()
+            registered = True
+        else:
+            #Invalid, print issues to command
+            print(user_form.errors, profile_form.errors)
+    else:
+        #Not an HTTP POST, render with blank forms
+        user_form = UserForm()
+        profile_form = UserProfileForm()
+    
+    #Render with context
+    context_dict = {"user_form": user_form, "profile_form": profile_form, "registered": registered}
+    return render(request, "rango/register.html", context_dict)
